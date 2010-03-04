@@ -1,0 +1,12 @@
+; $Id$
+name = Views Grouping Row Limit
+description = "Limit the number of rows under each grouping field in a view"
+
+; Core version (required)
+core = 6.x
+
+; Package name (see http://drupal.org/node/101009 for a list of names)
+package = Views
+
+; Module dependencies
+dependencies[] = views
