@@ -34,7 +34,7 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
     );
     $form['grouping-offset'] = array(
       '#type' => 'textfield',
-      '#title' => t('Items to display'),
+      '#title' => t('Offset'),
       '#default_value' => $this->options['grouping-offset'],
       '#size' => 6,
       '#element_validate' => array('grouping_validate'),
