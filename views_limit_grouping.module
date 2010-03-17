@@ -12,6 +12,5 @@
 function views_limit_grouping_views_api() {
   return array(
     'api' => 2,
-    'path' => drupal_get_path('module', 'views_limit_grouping') . '/views',
   );
 }

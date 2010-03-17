@@ -10,3 +10,9 @@ package = Views
 
 ; Module dependencies
 dependencies[] = views
+; Information added by drupal.org packaging script on 2010-03-17
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "views_limit_grouping"
+datestamp = "1268785165"
+
