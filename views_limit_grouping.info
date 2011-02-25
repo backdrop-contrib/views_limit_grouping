@@ -1,4 +1,3 @@
-; $Id$
 name = Views Grouping Row Limit
 description = "Limit the number of rows under each grouping field in a view"
 

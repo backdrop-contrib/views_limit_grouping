@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file views-limit-grouping.tpl.php

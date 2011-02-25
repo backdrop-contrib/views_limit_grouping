@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file views_grouping_limit_style_plugin.inc
