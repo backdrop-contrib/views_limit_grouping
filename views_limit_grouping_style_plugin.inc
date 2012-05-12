@@ -59,58 +59,23 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
       $rendered = $group_rendered === NULL ? TRUE : $group_rendered;
       $groupings = array(array('field' => $groupings, 'rendered' => $rendered));
     }
+    // Set some default values for grouping options.
+    elseif (is_array($groupings)) {
+      foreach ($groupings as &$info) {
+        $info['rendered'] = isset($info['rendered']) ? $info['rendered'] : $group_rendered;
+        $info['rendered_strip'] = isset($info['rendered_strip']) ? $info['rendered_strip'] : FALSE;
+      }
+    }
 
     // Make sure fields are rendered
     $this->render_fields($this->view->result);
 
     $sets = array();
     if ($groupings) {
-      foreach ($records as $index => $row) {
-        // Iterate through configured grouping fields to determine the
-        // hierarchically positioned set where the current row belongs to.
-        // While iterating, parent groups, that do not exist yet, are added.
-        $set = &$sets;
-        foreach ($groupings as $info) {
-          $field = $info['field'];
-          $rendered = isset($info['rendered']) ? $info['rendered'] : $group_rendered;
-          $rendered_strip = isset($info['rendered_strip']) ? $info['rendered_strip'] : FALSE;
-          $grouping = $group_content = '';
-          // Group on the rendered version of the field, not the raw.  That way,
-          // we can control any special formatting of the grouping field through
-          // the admin or theme layer or anywhere else we'd like.
-          if (isset($this->view->field[$field])) {
-            $group_content = $this->get_field($index, $field);
-            if ($this->view->field[$field]->options['label']) {
-              $group_content = $this->view->field[$field]->options['label'] . ': ' . $group_content;
-            }
-            if ($rendered) {
-              $grouping = $group_content;
-              if ($rendered_strip) {
-                $group_content = $grouping = strip_tags(htmlspecialchars_decode($group_content));
-              }
-            }
-            else {
-              $grouping = $this->get_field_value($index, $field);
-              // Not all field handlers return a scalar value,
-              // e.g. views_handler_field_field.
-              if (!is_scalar($grouping)) {
-                $grouping = md5(serialize($grouping));
-              }
-            }
-          }
-
-          // Create the group if it does not exist yet.
-          if (empty($set[$grouping])) {
-            $set[$grouping]['group'] = $group_content;
-            $set[$grouping]['rows'] = array();
-          }
-
-          // Move the set reference into the row set of the group we just determined.
-          $set = &$set[$grouping]['rows'];
-        }
-        // Add the row to the hierarchically positioned row set we just determined.
-        $set[$index] = $row;
-      }
+      array_walk($records, array($this, 'group_records_recursive'), array(
+        'sets' => &$sets,
+        'groupings' => $groupings,
+      ));
     }
     else {
       // Create a single group with an empty grouping field.
@@ -120,16 +85,46 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
       );
     }
 
-    // If this parameter isn't explicitely set modify the output to be fully
-    // backward compatible to code before Views 7.x-3.0-rc2.
+    // If this parameter isn't explicitely set, modify the output to be fully
+    // backward compatible.
     if ($group_rendered === NULL) {
       $sets = $this->handle_legacy_grouping($sets);
     }
 
     // Apply the offset and limit.
-    $output = $this->group_limit_recursive($sets);
-   
-    return $output;
+    return $this->group_limit_recursive($sets);
+  }
+
+  /**
+   * Recursively group records.
+   *
+   * @param stdClass $record
+   *   The record to sort.
+   * @param mixed $key
+   *   This record's key in the original array.
+   * @param array $sets
+   *   An array that tracks the sorted records. Should not be set directly.
+   *
+   * @see array_walk().
+   */
+  function group_records_recursive($record, $key, &$data) {
+    $parents = array();
+
+    foreach ($data['groupings'] as $info) {
+      // Group by the rendered version of the field if specified.
+      $group_content = $this->view->render_field($info['field'], $key);
+      $grouping = $info['rendered'] ? $group_content : $this->get_field_value($key, $info['field']);
+
+      $parents[] = $grouping;
+
+      $existing = drupal_array_get_nested_value($data['sets'], $parents);
+      if (!isset($existing['group'])) {
+        $existing['group'] = $group_content;
+      }
+      $existing['rows'][$key] = $record;
+
+      drupal_array_set_nested_value($data['sets'], $parents, $existing);
+    }
   }
 
   /**
@@ -192,13 +187,14 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
   }
 
   /**
-   * Helper function to handle legacy grouping style.
+   * Helper function to handle legacy grouping style from Views releases prior
+   * to 7.x-3.0-rc2.
    *
    * @param array $sets
    *   The grouped items.
    *
    * @return array
-   *   The grouped items, in pre-Views-7.x-3.0 style.
+   *   The grouped items, reformatted in a way that legacy views expects.
    */
   function handle_legacy_grouping($sets) {
     $legacy = array();
