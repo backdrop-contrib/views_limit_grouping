@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * @file
+ * Contains test for views_limit_grouping module.
+ */
+
+/**
+ * Unit test class for views_limit_grouping.
+ *
+ * These tests just test individual functions in the plugin with stubbed
+ * parameters.
+ */
+class ViewsLimitGroupingUnitTests extends DrupalWebTestCase {
+  protected $plugin;
+
+  /**
+   * Overrides parent::getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Views Limit Grouping unit tests',
+      'description' => 'Test functions in views_limit_grouping plugin class in isolation.',
+      'group' => 'Views',
+    );
+  }
+
+  /**
+   * Overrides parent::setUp().
+   *
+   * Initialize our style plugin and stub any dependant classes.
+   */
+  function setUp() {
+    parent::setUp();
+
+    $path = dirname(__FILE__);
+    if (!class_exists('views_plugin_style')) {
+      require $path . '/tests/class_stubs.inc';
+    }
+    require $path . '/views_limit_grouping_style_plugin.inc';
+    $this->plugin = new views_limit_grouping_style_plugin();
+  }
+
+  /**
+   *
+   */
+  function testDoAThing() {
+    $this->assertTrue($this->plugin);
+  }
+}
