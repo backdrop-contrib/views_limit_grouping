@@ -79,10 +79,7 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
     }
     else {
       // Create a single group with an empty grouping field.
-      $sets[''] = array(
-        'group' => '',
-        'rows' => $records,
-      );
+      $sets[''] = array('group' => '', 'rows' => $records);
     }
 
     // If this parameter isn't explicitely set, modify the output to be fully
@@ -106,25 +103,38 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
    *   An array that tracks the sorted records. Should not be set directly.
    *
    * @see array_walk().
+   * @todo: this is very broken for multiple groupings.
    */
   function group_records_recursive($record, $key, &$data) {
     $parents = array();
 
+    // Create the initial data structure if items for each grouping field have
+    // not been created yet.
     foreach ($data['groupings'] as $info) {
       // Group by the rendered version of the field if specified.
       $group_content = $this->view->render_field($info['field'], $key);
       $grouping = $info['rendered'] ? $group_content : $this->get_field_value($key, $info['field']);
 
+      // Sometimes the field value is not a string or integer (e.g. grouping by
+      // a file object), so we'll just hash the value if that is the case.
+      $grouping = is_scalar($grouping) ? $grouping : md5(serialize($grouping));
+
       $parents[] = $grouping;
-
       $existing = drupal_array_get_nested_value($data['sets'], $parents);
-      if (!isset($existing['group'])) {
-        $existing['group'] = $group_content;
+      if (empty($existing['group'])) {
+        $group = array(
+          'group' => $group_content,
+          'rows' => array(),
+        );
+        drupal_array_set_nested_value($data['sets'], $parents, $group);
       }
-      $existing['rows'][$key] = $record;
+      $parents[] = 'rows';
 
-      drupal_array_set_nested_value($data['sets'], $parents, $existing);
     }
+
+    $existing = drupal_array_get_nested_value($data['sets'], $parents);
+    $existing[$key] = $record;
+    drupal_array_set_nested_value($data['sets'], $parents, $existing);
   }
 
   /**
@@ -166,9 +176,9 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
     $group_data['rows'] = array_slice($group_data['rows'], $settings['grouping-offset'], $settings['grouping-limit'], TRUE);
    
     // For each row, if it appears to be another grouping, recurse again.
-    foreach ($group_data['rows'] as $group => $data) {
+    foreach ($group_data['rows'] as &$data) {
       if (is_array($data) && isset($data['group']) && isset($data['rows'])) {
-        $group_data['rows'][$group] = $this->_group_limit_recursive($data, NULL, $level + 1);
+        $this->_group_limit_recursive($data, NULL, $level + 1);
       }
     }
   }
