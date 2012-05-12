@@ -48,93 +48,11 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
 
   /**
    * Overrides parent::render_grouping().
-   *
-   * This is where the magic happens. Iterate through all of the results, and
-   * gather them into groups recursively.
    */
   function render_grouping($records, $groupings = array(), $group_rendered = NULL) {
-    // This is for backward compability, when $groupings was a string containing
-    // the ID of a single field.
-    if (is_string($groupings)) {
-      $rendered = $group_rendered === NULL ? TRUE : $group_rendered;
-      $groupings = array(array('field' => $groupings, 'rendered' => $rendered));
-    }
-    // Set some default values for grouping options.
-    elseif (is_array($groupings)) {
-      foreach ($groupings as &$info) {
-        $info['rendered'] = isset($info['rendered']) ? $info['rendered'] : $group_rendered;
-        $info['rendered_strip'] = isset($info['rendered_strip']) ? $info['rendered_strip'] : FALSE;
-      }
-    }
-
-    // Make sure fields are rendered
-    $this->render_fields($this->view->result);
-
-    $sets = array();
-    if ($groupings) {
-      array_walk($records, array($this, 'group_records_recursive'), array(
-        'sets' => &$sets,
-        'groupings' => $groupings,
-      ));
-    }
-    else {
-      // Create a single group with an empty grouping field.
-      $sets[''] = array('group' => '', 'rows' => $records);
-    }
-
-    // If this parameter isn't explicitely set, modify the output to be fully
-    // backward compatible.
-    if ($group_rendered === NULL) {
-      $sets = $this->handle_legacy_grouping($sets);
-    }
-
+    $sets = parent::render_grouping($records, $groupings, $group_rendered);
     // Apply the offset and limit.
     return $this->group_limit_recursive($sets);
-  }
-
-  /**
-   * Recursively group records.
-   *
-   * @param stdClass $record
-   *   The record to sort.
-   * @param mixed $key
-   *   This record's key in the original array.
-   * @param array $sets
-   *   An array that tracks the sorted records. Should not be set directly.
-   *
-   * @see array_walk().
-   * @todo: this is very broken for multiple groupings.
-   */
-  function group_records_recursive($record, $key, &$data) {
-    $parents = array();
-
-    // Create the initial data structure if items for each grouping field have
-    // not been created yet.
-    foreach ($data['groupings'] as $info) {
-      // Group by the rendered version of the field if specified.
-      $group_content = $this->view->render_field($info['field'], $key);
-      $grouping = $info['rendered'] ? $group_content : $this->get_field_value($key, $info['field']);
-
-      // Sometimes the field value is not a string or integer (e.g. grouping by
-      // a file object), so we'll just hash the value if that is the case.
-      $grouping = is_scalar($grouping) ? $grouping : md5(serialize($grouping));
-
-      $parents[] = $grouping;
-      $existing = drupal_array_get_nested_value($data['sets'], $parents);
-      if (empty($existing['group'])) {
-        $group = array(
-          'group' => $group_content,
-          'rows' => array(),
-        );
-        drupal_array_set_nested_value($data['sets'], $parents, $group);
-      }
-      $parents[] = 'rows';
-
-    }
-
-    $existing = drupal_array_get_nested_value($data['sets'], $parents);
-    $existing[$key] = $record;
-    drupal_array_set_nested_value($data['sets'], $parents, $existing);
   }
 
   /**
@@ -194,26 +112,6 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
    */
   function grouping_limit_settings($index) {
     return $this->options['grouping'][$index]['grouping-limit'];
-  }
-
-  /**
-   * Helper function to handle legacy grouping style from Views releases prior
-   * to 7.x-3.0-rc2.
-   *
-   * @param array $sets
-   *   The grouped items.
-   *
-   * @return array
-   *   The grouped items, reformatted in a way that legacy views expects.
-   */
-  function handle_legacy_grouping($sets) {
-    $legacy = array();
-
-    foreach ($sets as $group) {
-      $legacy[$group['group']] = $group['rows'];
-    }
-
-    return $legacy;
   }
 }
 
