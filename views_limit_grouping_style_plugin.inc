@@ -48,88 +48,11 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
 
   /**
    * Overrides parent::render_grouping().
-   *
-   * This is where the magic happens. Iterate through all of the results, and
-   * gather them into groups recursively.
    */
   function render_grouping($records, $groupings = array(), $group_rendered = NULL) {
-    // This is for backward compability, when $groupings was a string containing
-    // the ID of a single field.
-    if (is_string($groupings)) {
-      $rendered = $group_rendered === NULL ? TRUE : $group_rendered;
-      $groupings = array(array('field' => $groupings, 'rendered' => $rendered));
-    }
-
-    // Make sure fields are rendered
-    $this->render_fields($this->view->result);
-
-    $sets = array();
-    if ($groupings) {
-      foreach ($records as $index => $row) {
-        // Iterate through configured grouping fields to determine the
-        // hierarchically positioned set where the current row belongs to.
-        // While iterating, parent groups, that do not exist yet, are added.
-        $set = &$sets;
-        foreach ($groupings as $info) {
-          $field = $info['field'];
-          $rendered = isset($info['rendered']) ? $info['rendered'] : $group_rendered;
-          $rendered_strip = isset($info['rendered_strip']) ? $info['rendered_strip'] : FALSE;
-          $grouping = $group_content = '';
-          // Group on the rendered version of the field, not the raw.  That way,
-          // we can control any special formatting of the grouping field through
-          // the admin or theme layer or anywhere else we'd like.
-          if (isset($this->view->field[$field])) {
-            $group_content = $this->get_field($index, $field);
-            if ($this->view->field[$field]->options['label']) {
-              $group_content = $this->view->field[$field]->options['label'] . ': ' . $group_content;
-            }
-            if ($rendered) {
-              $grouping = $group_content;
-              if ($rendered_strip) {
-                $group_content = $grouping = strip_tags(htmlspecialchars_decode($group_content));
-              }
-            }
-            else {
-              $grouping = $this->get_field_value($index, $field);
-              // Not all field handlers return a scalar value,
-              // e.g. views_handler_field_field.
-              if (!is_scalar($grouping)) {
-                $grouping = md5(serialize($grouping));
-              }
-            }
-          }
-
-          // Create the group if it does not exist yet.
-          if (empty($set[$grouping])) {
-            $set[$grouping]['group'] = $group_content;
-            $set[$grouping]['rows'] = array();
-          }
-
-          // Move the set reference into the row set of the group we just determined.
-          $set = &$set[$grouping]['rows'];
-        }
-        // Add the row to the hierarchically positioned row set we just determined.
-        $set[$index] = $row;
-      }
-    }
-    else {
-      // Create a single group with an empty grouping field.
-      $sets[''] = array(
-        'group' => '',
-        'rows' => $records,
-      );
-    }
-
-    // If this parameter isn't explicitely set modify the output to be fully
-    // backward compatible to code before Views 7.x-3.0-rc2.
-    if ($group_rendered === NULL) {
-      $sets = $this->handle_legacy_grouping($sets);
-    }
-
+    $sets = parent::render_grouping($records, $groupings, $group_rendered);
     // Apply the offset and limit.
-    $output = $this->group_limit_recursive($sets);
-   
-    return $output;
+    return $this->group_limit_recursive($sets);
   }
 
   /**
@@ -171,9 +94,9 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
     $group_data['rows'] = array_slice($group_data['rows'], $settings['grouping-offset'], $settings['grouping-limit'], TRUE);
    
     // For each row, if it appears to be another grouping, recurse again.
-    foreach ($group_data['rows'] as $group => $data) {
+    foreach ($group_data['rows'] as &$data) {
       if (is_array($data) && isset($data['group']) && isset($data['rows'])) {
-        $group_data['rows'][$group] = $this->_group_limit_recursive($data, NULL, $level + 1);
+        $this->_group_limit_recursive($data, NULL, $level + 1);
       }
     }
   }
