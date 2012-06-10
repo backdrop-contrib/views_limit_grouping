@@ -11,7 +11,7 @@ files[] = views_limit_grouping.module
 files[] = views-limit-grouping.tpl.php
 files[] = views_limit_grouping_style_plugin.inc
 files[] = views_limit_grouping.views.inc
-files[] = views_limit_grouping.test
+files[] = tests/views_limit_grouping.test
 
 ; Module dependencies
 dependencies[] = views

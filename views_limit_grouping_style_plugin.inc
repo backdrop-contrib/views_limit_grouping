@@ -52,25 +52,12 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
   function render_grouping($records, $groupings = array(), $group_rendered = NULL) {
     $sets = parent::render_grouping($records, $groupings, $group_rendered);
     // Apply the offset and limit.
-    return $this->group_limit_recursive($sets);
-  }
-
-  /**
-   * Recursively limits the number of rows in nested groups.
-   *
-   * @param array $sets
-   *   An array of grouped records, having a "rows" key.
-   *
-   * @return array
-   *   The grouped records, limited by the specified limit and offset.
-   */
-  function group_limit_recursive($sets) {
-    array_walk($sets, array($this, '_group_limit_recursive'));
+    array_walk($sets, array($this, 'group_limit_recursive'));
     return $sets;
   }
 
   /**
-   * Helper function for group_limit_recursive().
+   * Recursively limits the number of rows in nested groups.
    *
    * @param array $group_data
    *   A single level of grouped records.
@@ -87,7 +74,7 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
    *   An array with a "rows" property that is recursively grouped by the
    *   grouping fields.
    */
-  function _group_limit_recursive(&$group_data, $key = NULL, $level = 0) {
+  function group_limit_recursive(&$group_data, $key = NULL, $level = 0) {
     $settings = $this->grouping_limit_settings($level);
 
     // Slice up the rows according to the offset and limit.
@@ -96,7 +83,7 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
     // For each row, if it appears to be another grouping, recurse again.
     foreach ($group_data['rows'] as &$data) {
       if (is_array($data) && isset($data['group']) && isset($data['rows'])) {
-        $this->_group_limit_recursive($data, NULL, $level + 1);
+        $this->group_limit_recursive($data, NULL, $level + 1);
       }
     }
   }
@@ -112,25 +99,6 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
    */
   function grouping_limit_settings($index) {
     return $this->options['grouping'][$index]['grouping-limit'];
-  }
-
-  /**
-   * Helper function to handle legacy grouping style.
-   *
-   * @param array $sets
-   *   The grouped items.
-   *
-   * @return array
-   *   The grouped items, in pre-Views-7.x-3.0 style.
-   */
-  function handle_legacy_grouping($sets) {
-    $legacy = array();
-
-    foreach ($sets as $group) {
-      $legacy[$group['group']] = $group['rows'];
-    }
-
-    return $legacy;
   }
 }
 

@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * @file
+ * Contains test for views_limit_grouping module.
+ */
+
+/**
+ * Unit test class for views_limit_grouping.
+ *
+ * These tests just test individual functions in the plugin with stubbed
+ * parameters.
+ */
+class ViewsLimitGroupingTests extends DrupalWebTestCase {
+  const CONTENT_TYPE_AMOUNT = 3;
+  const NODES_PER_CONTENT_TYPE = 10;
+
+  private $content_types;
+  private $nodes;
+
+  /**
+   * Overrides parent::getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Functional tests',
+      'description' => 'Test that views are properly limited in the UI.',
+      'group' => 'Views Limit Grouping',
+    );
+  }
+
+  /**
+   * Overrides parent::setUp().
+   *
+   * Create our initial content types and nodes.
+   */
+  function setUp() {
+    parent::setUp('views');
+
+    for ($i = 1; $i <= self::CONTENT_TYPE_AMOUNT; $i++) {
+      $type = $this->drupalCreateContentType(array(
+        'type' => 'content_type_' . $i,
+        'name' => 'Content Type ' . $i,
+      ));
+      $this->content_types[$type->type] = $type;
+    }
+    $this->assertEqual(count($this->content_types), self::CONTENT_TYPE_AMOUNT, 'Content types created');
+
+    // Make a bunch of nodes for each content type.
+    foreach (array_keys($this->content_types) as $type) {
+      for ($i = 0; $i < self::NODES_PER_CONTENT_TYPE; $i++) {
+        $this->nodes[$type][] = $this->drupalCreateNode(array(
+          'type' => $type,
+        ));
+      }
+      $this->assertEqual(count($this->nodes[$type]), self::NODES_PER_CONTENT_TYPE, t('Nodes for content type %type created', array(
+        '%type' => $this->content_types[$type]->name,
+      )));
+    }
+  }
+
+  /**
+   * Test a single level of grouping.
+   */
+  function testDoAThing() {
+    $this->pass('Hello');
+  }
+}
