@@ -8,7 +8,7 @@
 /**
  * Functional test class for views_limit_grouping.
  */
-class ViewsLimitGroupingTests extends DrupalWebTestCase {
+class ViewsLimitGroupingTests extends BackdropWebTestCase {
   const CONTENT_TYPE_AMOUNT = 3;
   const NODES_PER_CONTENT_TYPE = 10;
 
@@ -36,7 +36,7 @@ class ViewsLimitGroupingTests extends DrupalWebTestCase {
     parent::setUp('views_limit_grouping_test');
 
     for ($i = 1; $i <= self::CONTENT_TYPE_AMOUNT; $i++) {
-      $type = $this->drupalCreateContentType(array(
+      $type = $this->backdropCreateContentType(array(
         'type' => 'content_type_' . $i,
         'name' => 'Content Type ' . $i,
       ));
@@ -47,7 +47,7 @@ class ViewsLimitGroupingTests extends DrupalWebTestCase {
     // Make a bunch of nodes for each content type.
     foreach (array_keys($this->content_types) as $type) {
       for ($i = 0; $i < self::NODES_PER_CONTENT_TYPE; $i++) {
-        $this->nodes[$type][] = $this->drupalCreateNode(array(
+        $this->nodes[$type][] = $this->backdropCreateNode(array(
           'type' => $type,
         ));
       }
@@ -83,7 +83,7 @@ class ViewsLimitGroupingTests extends DrupalWebTestCase {
    * Test a single level of grouping with offset.
    */
   function testSimpleGroupingLimitWithOffset() {
-    $this->drupalGet('group-by-content-type-with-offset');
+    $this->backdropGet('group-by-content-type-with-offset');
 
     // Get the nodes manually so that we can tell if the offset happened.
     $nodes = db_query('SELECT type, title FROM {node} ORDER BY created')->fetchAll();
@@ -113,7 +113,7 @@ class ViewsLimitGroupingTests extends DrupalWebTestCase {
 
     // The path for all of the views in our test cases is the same as the view
     // name.
-    $this->drupalGet($view_name);
+    $this->backdropGet($view_name);
 
     $elements = $this->xpath('//div[contains(string(@class),"view-' . $view_name . '")]/div[@class="view-content"]');
     $this->assertEqual(count($elements), 1, t('The view container div was found.'));

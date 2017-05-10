@@ -1,17 +1,15 @@
 name = Views Grouping Row Limit
 description = "Limit the number of rows under each grouping field in a view"
-
-; Core version (required)
-core = 7.x
-
-; Package name (see http://drupal.org/node/101009 for a list of names)
+backdrop = 1.x
 package = Views
+type = module
 
 files[] = views_limit_grouping.module
 files[] = views-limit-grouping.tpl.php
-files[] = views_limit_grouping_style_plugin.inc
-files[] = views_limit_grouping.views.inc
-files[] = tests/views_limit_grouping.test
+; files[] = views_limit_grouping_style_plugin.inc
+files[] = templates/views_limit_grouping.views.inc
+; TODO: Tests need work
+; files[] = tests/views_limit_grouping.test
 
 ; Module dependencies
 dependencies[] = views

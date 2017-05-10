@@ -9,8 +9,8 @@
   <?php if (!empty($title)): ?>
     <h3><?php print $title; ?></h3>
   <?php endif; ?>
-  <?php foreach ($rows as $id => $row): ?>
-    <div class="views-row views-row-<?php print $zebra; ?> <?php print $classes; ?>">
+  <?php foreach ($rows as $row_count => $row): ?>
+    <div <?php if (!empty($row_classes[$row_count])) { print 'class="' . implode(' ', $row_classes[$row_count]) . '"';  } ?>>
       <?php print $row; ?>
     </div>
   <?php endforeach; ?>

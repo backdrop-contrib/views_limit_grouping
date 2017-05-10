@@ -13,3 +13,9 @@ function views_limit_grouping_views_api() {
     'api' => 3,
   );
 }
+
+function views_limit_grouping_autoload_info() {
+  return array(
+    'views_limit_grouping_style_plugin' => 'includes/views_limit_grouping_style_plugin.inc',
+  );
+}
