@@ -1,13 +1,9 @@
 <?php
 
 /**
- * @file views_limit_grouping.views.inc
- * Just describing our Views style plugin; nothing much to see here.
- */
-
-/**
  * Implements hook_views_plugins().
  */
+ 
 function views_limit_grouping_views_plugins() {
   return array(
     'style' => array(

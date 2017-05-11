@@ -79,7 +79,7 @@ class views_limit_grouping_style_plugin extends views_plugin_style {
 
     // Slice up the rows according to the offset and limit.
     $group_data['rows'] = array_slice($group_data['rows'], $settings['grouping-offset'], $settings['grouping-limit'], TRUE);
-   
+    
     // For each row, if it appears to be another grouping, recurse again.
     foreach ($group_data['rows'] as &$data) {
       if (is_array($data) && isset($data['group']) && isset($data['rows'])) {

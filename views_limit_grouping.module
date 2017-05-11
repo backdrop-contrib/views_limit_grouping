@@ -1,5 +1,10 @@
 <?php
 
+// Load the .inc file.
+
+module_load_include('inc', 'views_limit_grouping', 'views_limit_grouping.views');
+
+
 /**
  * @file
  * Just declaring Views dependancy; nothing much to see here.
@@ -19,3 +24,4 @@ function views_limit_grouping_autoload_info() {
     'views_limit_grouping_style_plugin' => 'includes/views_limit_grouping_style_plugin.inc',
   );
 }
+

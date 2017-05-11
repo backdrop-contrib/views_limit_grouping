@@ -7,10 +7,10 @@
 ?>
 <div class="views-limit-grouping-group">
   <?php if (!empty($title)): ?>
-    <h3><?php print $title; ?></h3>
+    <?php print $title; ?>
   <?php endif; ?>
   <?php foreach ($rows as $row_count => $row): ?>
-    <div <?php if (!empty($row_classes[$row_count])) { print 'class="' . implode(' ', $row_classes[$row_count]) . '"';  } ?>>
+    <div class="views-row views-row-<?php print $zebra; ?> <?php print $classes; ?>">
       <?php print $row; ?>
     </div>
   <?php endforeach; ?>
