@@ -13,6 +13,7 @@ function views_limit_grouping_views_plugins() {
         'handler' => 'views_limit_grouping_style_plugin',
         'theme' => 'views_limit_grouping',
         'uses row plugin' => TRUE,
+        'uses row class' => TRUE,
         'uses options' => TRUE,
         'uses grouping' => TRUE,
         'type' => 'normal',

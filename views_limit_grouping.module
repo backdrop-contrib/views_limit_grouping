@@ -1,9 +1,7 @@
 <?php
 
-// Load the .inc file.
-
+// Load the views .inc file.
 module_load_include('inc', 'views_limit_grouping', 'views_limit_grouping.views');
-
 
 /**
  * @file
