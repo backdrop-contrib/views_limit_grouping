@@ -1,13 +1,4 @@
 <?php
-
-// Load the views .inc file.
-module_load_include('inc', 'views_limit_grouping', 'views_limit_grouping.views');
-
-/**
- * @file
- * Just declaring Views dependancy; nothing much to see here.
- */
-
 /**
  * Implementation of hook_views_api().
  */
@@ -17,6 +8,14 @@ function views_limit_grouping_views_api() {
   );
 }
 
+/**
+ * Load the views .inc files.
+ */
+module_load_include('inc', 'views_limit_grouping', 'templates/views_limit_grouping.views');
+
+/**
+ * Implementation of hook_autoload_info().
+ */
 function views_limit_grouping_autoload_info() {
   return array(
     'views_limit_grouping_style_plugin' => 'includes/views_limit_grouping_style_plugin.inc',
