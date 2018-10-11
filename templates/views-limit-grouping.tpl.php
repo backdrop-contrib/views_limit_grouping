@@ -15,10 +15,10 @@
 
 <div class="views-limit-grouping-group">
   <?php if (!empty($title)): ?>
-    <?php print $title; ?>
+    <div class="view-grouping-header"><?php print $title; ?></div>
   <?php endif; ?>
   <?php foreach ($rows as $row_count => $row): ?>
-  <div <?php if (!empty($row_classes[$row_count])) { print 'class="' . implode(' ', $row_classes[$row_count]) . '"';  } ?>>
+  <div class="view-grouping-content <?php if (!empty($row_classes[$row_count])) { print implode(' ', $row_classes[$row_count]);  } ?>">
       <?php print $row; ?>
     </div>
   <?php endforeach; ?>
